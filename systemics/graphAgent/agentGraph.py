@@ -56,7 +56,7 @@ class EventEdge(ABC):
 class StateNode:
     def __init__(self, state_name: str, state_description: str = ""):
         """
-        state node 생성자
+        state를 표현하는 노드
         :param state_name: state 이름
         :param state_description: state 설명
         """
@@ -83,6 +83,10 @@ class StateNode:
         for logical_edge in self.logical_edges:
             if logical_edge.forward(state_data):
                 return logical_edge.next_state
+
+        if len(self.event_edges) == 0:
+            print("End of the state machine")
+            return self
 
         events = [event.forward(state_data) for event in self.event_edges]
         done, pending = await asyncio.wait(events, return_when=asyncio.FIRST_COMPLETED)
