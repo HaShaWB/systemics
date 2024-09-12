@@ -1,56 +1,79 @@
 import asyncio
-from typing import Any
-from graphAgent.agentGraph import StateNode, LogicalEdge, EventEdge  # your_module은 원래 코드가 있는 파일명으로 변경해주세요
+from Element import StateInfo, FlowEdge, LogicalEdge, EventEdge, TimerEdge, StateNode
 
-class DebugStateNode(StateNode):
-    def action(self, state_data: Any) -> None:
-        print(f"Executing action in state: {self.state_name}")
-        print(f"Current state data: {state_data}")
+# 상태 정보 초기화
+state_info = StateInfo()
 
-class IncrementLogicalEdge(LogicalEdge):
-    def __init__(self, prev_state: StateNode, next_state: StateNode, threshold: int):
-        super().__init__(prev_state, next_state, self.increment_condition, f"Increment until {threshold}")
-        self.threshold = threshold
 
-    def increment_condition(self, state_data: dict) -> bool:
-        state_data['counter'] += 1
-        print(f"Incremented counter to: {state_data['counter']}")
-        return state_data['counter'] >= self.threshold
+# 상태 노드 정의
+class ExampleNode(StateNode):
+    def __init__(self, name):
+        super().__init__(name)
+        self.visits = 0
 
-class DelayEventEdge(EventEdge):
-    def __init__(self, prev_state: StateNode, next_state: StateNode, delay: float):
-        super().__init__(prev_state, next_state, f"Delay for {delay} seconds")
-        self.delay = delay
+    def action(self, state_info):
+        self.visits += 1
+        print(f"Visiting {self.state_name} (visit count: {self.visits})")
 
-    async def forward(self, state_data: Any) -> StateNode:
-        print(f"Waiting for {self.delay} seconds...")
-        await asyncio.sleep(self.delay)
-        print("Delay completed")
-        return self.next_state
 
-async def run_state_machine(start_state: StateNode, end_state: StateNode, initial_state_data: dict):
-    current_state = start_state
-    state_data = initial_state_data
+# 노드 생성
+node_a = ExampleNode("Node A")
+node_b = ExampleNode("Node B")
+node_c = ExampleNode("Node C")
 
-    while current_state != end_state:
-        print(f"\nCurrent state: {current_state.state_name}")
-        current_state = await current_state.process(state_data)
+# 엣지 설정
+node_a.logical_edges.append(LogicalEdge(node_a, node_b, lambda _: True, "A to B"))
+node_b.event_edges.append(EventEdge(node_b, node_c, "GO_TO_C", "B to C on event"))
+node_c.timer_edge = TimerEdge(node_c, node_a, 2, "C to A after 2 seconds")
 
-    print(f"\nState machine completed. Final state: {current_state.state_name}")
-    print(f"Final state data: {state_data}")
 
-# 상태 노드 생성
-start = DebugStateNode("Start", "Initial state")
-middle = DebugStateNode("Middle", "Intermediate state")
-end = DebugStateNode("End", "Final state")
+async def run_state_machine():
+    current_node = node_a
+    for _ in range(10):  # 10번 반복
+        print(f"\nCurrent node: {current_node.state_name}")
 
-# 엣지 생성 및 연결
-logical_edge = IncrementLogicalEdge(start, middle, 5)
-start.logical_edges.append(logical_edge)
+        if current_node == node_b:
+            print("Triggering GO_TO_C event")
+            state_info.event_queue.put("GO_TO_C")
 
-event_edge = DelayEventEdge(middle, end, 3.0)
-middle.event_edges.append(event_edge)
+        try:
+            next_node = await asyncio.wait_for(current_node.process(state_info), timeout=5.0)
+        except asyncio.TimeoutError:
+            print(f"Timeout occurred in {current_node.state_name}. Moving to next node.")
+            next_node = node_c if current_node == node_b else node_a
 
-# 상태 기계 실행
-initial_data = {'counter': 0}
-asyncio.run(run_state_machine(start, end, initial_data))
+        current_node = next_node
+        await asyncio.sleep(0.1)  # 상태 변화를 더 잘 관찰하기 위한 짧은 대기
+
+
+# Element.py의 StateNode 클래스 수정 (이 부분은 Element.py 파일에서 수정해야 합니다)
+"""
+class StateNode:
+    # ... (기존 코드)
+
+    async def process(self, stateInfo: StateInfo) -> "StateNode":
+        self.action(stateInfo)
+
+        for edge in self.logical_edges:
+            next_state = edge.forward(stateInfo)
+            if next_state:
+                return next_state
+
+        event_tasks = [edge.forward(stateInfo) for edge in self.event_edges]
+        if self.timer_edge:
+            event_tasks.append(self.timer_edge.forward(stateInfo))
+
+        if not event_tasks:
+            return self
+
+        done, pending = await asyncio.wait(event_tasks, return_when=asyncio.FIRST_COMPLETED)
+
+        next_state = done.pop().result()
+        for task in pending:
+            task.cancel()
+
+        return next_state
+"""
+
+# 상태 머신 실행
+asyncio.run(run_state_machine())
