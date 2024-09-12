@@ -1,79 +1,127 @@
 import asyncio
-from Element import StateInfo, FlowEdge, LogicalEdge, EventEdge, TimerEdge, StateNode
+from graphAgent.stateInfo import StateInfo, AgentEvent
+from graphAgent.stateNode import StateNode
+from graphAgent.flowEdge import (
+    SimpleLogicalEdge,
+    BranchLogicalEdge,
+    SimpleTimerEdge,
+    BranchTimerEdge,
+    SimpleEventEdge,
+    BranchEventEdge,
+)
 
-# 상태 정보 초기화
-state_info = StateInfo()
+async def test_simple_logical_edge():
+    print("\nTesting SimpleLogicalEdge")
+    state_info = StateInfo()
+    start_state = StateNode("Start", "Start State")
+    end_state = StateNode("End", "End State")
+    
+    edge = SimpleLogicalEdge(start_state, end_state, lambda x: True)
+    result = edge.forward(state_info)
+    print(f"SimpleLogicalEdge result: {result.state_name}")
 
+async def test_branch_logical_edge():
+    print("\nTesting BranchLogicalEdge")
+    state_info = StateInfo()
+    start_state = StateNode("Start", "Start State")
+    state_a = StateNode("A", "State A")
+    state_b = StateNode("B", "State B")
+    
+    def decision_func(info):
+        return state_a if len(info.flow_event_list) == 0 else state_b
+    
+    edge = BranchLogicalEdge(start_state, [state_a, state_b], decision_func)
+    result = edge.forward(state_info)
+    print(f"BranchLogicalEdge result (empty event list): {result.state_name}")
+    
+    state_info.flow_event_list.append(AgentEvent("test", None))
+    result = edge.forward(state_info)
+    print(f"BranchLogicalEdge result (non-empty event list): {result.state_name}")
 
-# 상태 노드 정의
-class ExampleNode(StateNode):
-    def __init__(self, name):
-        super().__init__(name)
-        self.visits = 0
+async def test_simple_timer_edge():
+    print("\nTesting SimpleTimerEdge")
+    state_info = StateInfo()
+    start_state = StateNode("Start", "Start State")
+    end_state = StateNode("End", "End State")
+    
+    edge = SimpleTimerEdge(start_state, end_state, lambda x: True, 2)
+    result = await edge.forward(state_info)
+    print(f"SimpleTimerEdge result: {result.state_name}")
 
-    def action(self, state_info):
-        self.visits += 1
-        print(f"Visiting {self.state_name} (visit count: {self.visits})")
+async def test_branch_timer_edge():
+    print("\nTesting BranchTimerEdge")
+    state_info = StateInfo()
+    start_state = StateNode("Start", "Start State")
+    state_a = StateNode("A", "State A")
+    state_b = StateNode("B", "State B")
+    
+    def decision_func(info):
+        return state_a if len(info.flow_event_list) == 0 else state_b
+    
+    edge = BranchTimerEdge(start_state, [state_a, state_b], decision_func, 2)
+    result = await edge.forward(state_info)
+    print(f"BranchTimerEdge result (empty event list): {result.state_name}")
+    
+    state_info.flow_event_list.append(AgentEvent("test", None))
+    result = await edge.forward(state_info)
+    print(f"BranchTimerEdge result (non-empty event list): {result.state_name}")
 
+async def test_simple_event_edge():
+    print("\nTesting SimpleEventEdge")
+    state_info = StateInfo()
+    start_state = StateNode("Start", "Start State")
+    end_state = StateNode("End", "End State")
+    
+    edge = SimpleEventEdge(start_state, end_state, "test_event")
+    result = edge.forward(state_info)
+    print(f"SimpleEventEdge result (no event): {result}")
+    
+    state_info.flow_event_list.append(AgentEvent("test_event", None))
+    result = edge.forward(state_info)
+    print(f"SimpleEventEdge result (with event): {result.state_name}")
 
-# 노드 생성
-node_a = ExampleNode("Node A")
-node_b = ExampleNode("Node B")
-node_c = ExampleNode("Node C")
+async def test_branch_event_edge():
+    print("\nTesting BranchEventEdge")
+    state_info = StateInfo()
+    start_state = StateNode("Start", "Start State")
+    state_a = StateNode("A", "State A")
+    state_b = StateNode("B", "State B")
+    
+    def decision_func(info, event_data):
+        return state_a if event_data is None else state_b
+    
+    edge = BranchEventEdge(start_state, [state_a, state_b], decision_func, "test_event")
+    result = edge.forward(state_info)
+    print(f"BranchEventEdge result (no event): {result}")
+    
+    state_info.flow_event_list.append(AgentEvent("test_event", None))
+    result = edge.forward(state_info)
+    print(f"BranchEventEdge result (event with no data): {result.state_name}")
+    
+    state_info.flow_event_list.append(AgentEvent("test_event", "data"))
+    result = edge.forward(state_info)
+    print(f"BranchEventEdge result (event with data): {result.state_name}")
 
-# 엣지 설정
-node_a.logical_edges.append(LogicalEdge(node_a, node_b, lambda _: True, "A to B"))
-node_b.event_edges.append(EventEdge(node_b, node_c, "GO_TO_C", "B to C on event"))
-node_c.timer_edge = TimerEdge(node_c, node_a, 2, "C to A after 2 seconds")
+async def test_state_node():
+    print("\nTesting StateNode")
+    state_info = StateInfo()
+    start_state = StateNode("Start", "Start State", state_info)
+    end_state = StateNode("End", "End State", state_info)
+    
+    logical_edge = SimpleLogicalEdge(start_state, end_state, lambda x: True)
+    start_state.set_logical_edges([logical_edge])
+    
+    result = await start_state.process()
+    print(f"StateNode process result: {result.state_name}")
 
+async def main():
+    await test_simple_logical_edge()
+    await test_branch_logical_edge()
+    await test_simple_timer_edge()
+    await test_branch_timer_edge()
+    await test_simple_event_edge()
+    await test_branch_event_edge()
+    await test_state_node()
 
-async def run_state_machine():
-    current_node = node_a
-    for _ in range(10):  # 10번 반복
-        print(f"\nCurrent node: {current_node.state_name}")
-
-        if current_node == node_b:
-            print("Triggering GO_TO_C event")
-            state_info.event_queue.put("GO_TO_C")
-
-        try:
-            next_node = await asyncio.wait_for(current_node.process(state_info), timeout=5.0)
-        except asyncio.TimeoutError:
-            print(f"Timeout occurred in {current_node.state_name}. Moving to next node.")
-            next_node = node_c if current_node == node_b else node_a
-
-        current_node = next_node
-        await asyncio.sleep(0.1)  # 상태 변화를 더 잘 관찰하기 위한 짧은 대기
-
-
-# Element.py의 StateNode 클래스 수정 (이 부분은 Element.py 파일에서 수정해야 합니다)
-"""
-class StateNode:
-    # ... (기존 코드)
-
-    async def process(self, stateInfo: StateInfo) -> "StateNode":
-        self.action(stateInfo)
-
-        for edge in self.logical_edges:
-            next_state = edge.forward(stateInfo)
-            if next_state:
-                return next_state
-
-        event_tasks = [edge.forward(stateInfo) for edge in self.event_edges]
-        if self.timer_edge:
-            event_tasks.append(self.timer_edge.forward(stateInfo))
-
-        if not event_tasks:
-            return self
-
-        done, pending = await asyncio.wait(event_tasks, return_when=asyncio.FIRST_COMPLETED)
-
-        next_state = done.pop().result()
-        for task in pending:
-            task.cancel()
-
-        return next_state
-"""
-
-# 상태 머신 실행
-asyncio.run(run_state_machine())
+if __name__ == "__main__":
+    asyncio.run(main())
