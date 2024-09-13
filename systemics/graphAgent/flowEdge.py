@@ -1,10 +1,8 @@
 # graphAgent/flowEdge.py
 
 import asyncio
-from typing import Callable
+from typing import Callable,  TYPE_CHECKING
 from abc import ABC, abstractmethod
-
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .stateNode import StateNode
