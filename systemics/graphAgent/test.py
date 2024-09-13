@@ -1,7 +1,7 @@
 import asyncio
-from graphAgent.stateInfo import StateInfo, AgentEvent
-from graphAgent.stateNode import StateNode
-from graphAgent.flowEdge import (
+from stateInfo import StateInfo, AgentEvent
+from stateNode import StateNode
+from flowEdge import (
     SimpleLogicalEdge,
     BranchLogicalEdge,
     SimpleTimerEdge,

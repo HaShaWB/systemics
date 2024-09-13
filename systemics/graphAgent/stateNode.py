@@ -2,8 +2,8 @@
 
 import asyncio
 
-from graphAgent.stateInfo import StateInfo
-from graphAgent.flowEdge import *
+from .stateInfo import StateInfo
+from .flowEdge import *
 
 
 TIME_OUT = 30

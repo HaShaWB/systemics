@@ -4,8 +4,13 @@ import asyncio
 from typing import Callable
 from abc import ABC, abstractmethod
 
-from graphAgent.graphAgentError import NotConnectedNodeError
-from graphAgent.stateInfo import StateInfo, AgentEvent
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .stateNode import StateNode
+
+from .graphAgentError import NotConnectedNodeError
+from .stateInfo import StateInfo, AgentEvent
 
 
 class FlowEdge(ABC):
