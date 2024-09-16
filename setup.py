@@ -2,10 +2,13 @@ from setuptools import setup, find_packages
 
 setup(
     name="systemics",
-    version="0.0.4",
+    version="0.0.5",
     packages=find_packages(),
-    install_requires=[
+    install_requires=[        
     ],
+    extras_require={
+        "lm" : ["openai", "pydantic"],
+    },
     author="HaShaWB",
     author_email="whitebluej@kaist.ac.kr",
     description="AI system for general agents",
