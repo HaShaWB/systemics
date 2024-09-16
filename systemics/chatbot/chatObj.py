@@ -1,3 +1,5 @@
+# chatbot/chatObj.py
+
 import json
 
 from .utils import list_to_str, dict_to_str
@@ -94,14 +96,14 @@ class AdvancedSystemChat(SystemChat):
     """
     basic structure of advanced system chat object
 
-    - plain_content : plain content of the chat object (Intro of the LM prompt) 
+    - initial_content : plain content of the chat object (Intro of the LM prompt) 
         -> highly recommended to start with "you are a/an {major_role}" (for example, "you are a helpful assistant")
     - generating_rules : generating rules of the chat object (optional, highly recommended)
     - assistant_profile : assistant profile of the chat object (optional)   
     - user_profile : user profile of the chat object (optional)
     """
 
-    def __init__(self, content: str,
+    def __init__(self, initial_content: str,
                  generating_rules: list[str]|str|None = None, 
                  assistant_profile: dict|str|None = None, 
                  user_profile: dict|str|None = None):
@@ -114,13 +116,13 @@ class AdvancedSystemChat(SystemChat):
         :param user_profile: dict|str|None = None
         """
         
-        self.plain_content = content
+        self.initial_content = initial_content
         self.generating_rules = generating_rules
         self.assistant_profile = assistant_profile
         self.user_profile = user_profile
 
-        content = self.construct_content()
-        super().__init__(content)
+        initial_content = self.construct_content()
+        super().__init__(initial_content)
 
     
     def construct_content(self, use_generating_rules: bool = True, 
@@ -136,7 +138,7 @@ class AdvancedSystemChat(SystemChat):
         :return: content of the advanced system chat object
         """
         
-        content = self.plain_content
+        content = self.initial_content
 
         if use_generating_rules and self.generating_rules is not None:
             if type(self.generating_rules) == str:
@@ -181,3 +183,13 @@ class FlowGuideSystemChat(SystemChat):
         """
         super().__init__(flow_guide)
         self.flow_guide = flow_guide
+
+
+def chatObjs_to_list(chatObjs: list[ChatObj]) -> list[dict]:
+    """
+    convert list of chat objects to list of dicts
+
+    :param chatObjs: list[ChatObj]
+    :return: list[dict]
+    """
+    return [chatObj.chat() for chatObj in chatObjs]

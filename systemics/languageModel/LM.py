@@ -12,5 +12,5 @@ class LM(ABC):
                       temperature: float = 1,
                       top_p: float = 1,
                       max_tokens: int | None = None,
-                      **kwargs):
+                      **kwargs) -> tuple[str, dict]:
         pass
