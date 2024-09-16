@@ -8,13 +8,15 @@ from LM import LM
 
 class Openai_LM(LM):
     """
-    Openai api 기반 Language Model
+    Language Model based on OpenAI API
     """
 
     def __init__(self, model: str, api_key: str = os.getenv('OPENAI_API_KEY')):
         """
-        :param model: openai의 LM 모델명 => gpt-4o, gpt-3.5-turbo 등
-        :param api_key: openai api key => 기본값 = 시스템 환경 변수의 값을 가져옴
+        Initialize the OpenAI Language Model
+
+        :param model: Name of the OpenAI LM model (e.g., gpt-4, gpt-3.5-turbo)
+        :param api_key: OpenAI API key (default: retrieves from system environment variable)
         """
         self.model = model
         self.agent = openai.OpenAI(api_key=api_key)
@@ -26,13 +28,14 @@ class Openai_LM(LM):
                       max_tokens: int | None = None,
                       **kwargs):
         """
-        messages를 바탕으로 assistant의 답변을 생성하는 함수
-        :param messages: 기존의 대화록
-        :param temperature: 답변의 랜덤성 (커질수록 무작위한 답변이 나옴)
-        :param top_p: 답변의 범위 (커질수록 다양한 답변이 나옴)
-        :param max_tokens: 최대 사용 토큰 수
-        :param kwargs: 기타 key words
-        :return: answer, # of used tokens
+        Generate assistant's response based on the given messages
+
+        :param messages: List of previous conversation messages
+        :param temperature: Controls randomness in the response (higher values increase randomness)
+        :param top_p: Controls diversity of the response (higher values increase diversity)
+        :param max_tokens: Maximum number of tokens to generate
+        :param kwargs: Additional keyword arguments
+        :return: Tuple containing (generated answer, usage statistics)
         """
         completion = self.agent.chat.completions.create(
             model=self.model,
@@ -55,13 +58,14 @@ class Openai_LM(LM):
                               max_tokens: int | None = None,
                               **kwargs):
         """
-        messages를 바탕으로 json 형식에 맞춰 답변을 생성하는 함수
-        :param messages: 기존의 대화록
-        :param temperature: 답변의 랜덤성 (커질수록 무작위한 답변이 나옴)
-        :param top_p: 답변의 범위 (커질수록 다양한 답변이 나옴)
-        :param max_tokens: 최대 사용 토큰 수
-        :param kwargs: 기타 key words
-        :return: answer(in json), # of used tokens
+        Generate response in JSON format based on the given messages
+
+        :param messages: List of previous conversation messages
+        :param temperature: Controls randomness in the response (higher values increase randomness)
+        :param top_p: Controls diversity of the response (higher values increase diversity)
+        :param max_tokens: Maximum number of tokens to generate
+        :param kwargs: Additional keyword arguments
+        :return: Tuple containing (generated answer in JSON format, usage statistics)
         """
 
         completion = self.agent.chat.completions.create(
@@ -88,14 +92,15 @@ class Openai_LM(LM):
                                    **kwargs
                                    ):
         """
-        messages를 바탕으로 특정한 structure에 맞춰 답변을 생성하는 함수
-        :param messages: 기존의 대화록
-        :param structure: 답변 structure
-        :param temperature: 답변의 랜덤성 (커질수록 무작위한 답변이 나옴)
-        :param top_p: 답변의 범위 (커질수록 다양한 답변이 나옴)
-        :param max_tokens: 최대 사용 토큰 수
-        :param kwargs: 기타 key words
-        :return: answer(in BaseModel -> use .json() or .dict()), # of used tokens
+        Generate response in a specific structure based on the given messages
+
+        :param messages: List of previous conversation messages
+        :param structure: Desired response structure (BaseModel)
+        :param temperature: Controls randomness in the response (higher values increase randomness)
+        :param top_p: Controls diversity of the response (higher values increase diversity)
+        :param max_tokens: Maximum number of tokens to generate
+        :param kwargs: Additional keyword arguments
+        :return: Tuple containing (generated answer in specified structure, usage statistics)
         """
 
         completion = self.agent.beta.chat.completions.parse(
