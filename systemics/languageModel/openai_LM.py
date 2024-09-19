@@ -3,7 +3,7 @@ from pydantic import BaseModel
 
 import openai
 
-from LM import LM
+from .LM import LM
 
 
 class Openai_LM(LM):

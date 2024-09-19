@@ -11,4 +11,6 @@ class AgentEvent:
 
 class StateInfo:
     def __init__(self):
+
+        # list for event tackling
         self.flow_event_list: list[AgentEvent] = []

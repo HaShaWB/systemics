@@ -21,17 +21,19 @@ class StateNode:
     - event_edges: list of event edges
     """
 
-    def __init__(self, state_name: str, state_description: str = "", state_info: StateInfo = None):
+    def __init__(self, state_name: str, state_description: str = "", state_info: StateInfo = None, action: callable[StateInfo, None] = lambda x: None):
         """
         Initialize a StateNode
 
         :param state_name: name of the state
         :param state_description: description of the state (optional)
         :param state_info: information about the state (optional)
+        :param action: action to perform when entering the state (optional)
         """
         self.state_name = state_name
         self.state_description = state_description
         self.state_info = state_info
+        self.action = action
 
         self.candidate_states : dict[str, StateNode] = {
             "logical" : [],
@@ -43,12 +45,6 @@ class StateNode:
         self.timer_edge : SimpleEventEdge|BranchTimerEdge = SimpleTimerEdge(self, self, lambda x : True, TIME_OUT)
         self.event_edges : list[SimpleEventEdge|BranchEventEdge] = []
 
-    def action(self,):
-        """
-        Perform the action associated with this state
-        This method should be overridden in subclasses
-        """
-        pass
 
     def set_logical_edges(self, logical_edges: list[SimpleLogicalEdge|BranchLogicalEdge] ):
         """
@@ -102,7 +98,7 @@ class StateNode:
 
         :return: next state node
         """
-        self.action()
+        self.action(self.state_info)
 
         state_info = self.state_info
 
