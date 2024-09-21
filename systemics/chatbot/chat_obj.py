@@ -3,7 +3,7 @@
 import json
 
 from .utils import list_to_str, dict_to_str
-from .chatbotError import ChatbotInputError
+from .chatbot_error import ChatbotInputError
 
 class ChatObj:
     """
@@ -41,6 +41,10 @@ class ChatObj:
         :return: chatObj in dict format
         """
         return {"role": self.role, "content": self.content}
+    
+    
+    def __str__(self):
+        return f"{self.role} : {self.content}"
     
 
 class SystemChat(ChatObj):
@@ -91,7 +95,6 @@ class AssistantChat(ChatObj):
         super().__init__("assistant", content)
 
 
-
 class AdvancedSystemChat(SystemChat):
     """
     basic structure of advanced system chat object
@@ -103,7 +106,7 @@ class AdvancedSystemChat(SystemChat):
     - user_profile : user profile of the chat object (optional)
     """
 
-    def __init__(self, initial_content: str,
+    def __init__(self, initial_content: str = "you are a helpful assistant",
                  generating_rules: list[str]|str|None = None, 
                  assistant_profile: dict|str|None = None, 
                  user_profile: dict|str|None = None):
@@ -142,25 +145,25 @@ class AdvancedSystemChat(SystemChat):
 
         if use_generating_rules and self.generating_rules is not None:
             if type(self.generating_rules) == str:
-                content = content + "\n\n generating rules: \n" + self.generating_rules
+                content = content + "\n\n### generating rules: \n" + self.generating_rules
             elif type(self.generating_rules) == list:
-                content = content + "\n\n generating rules: \n" + list_to_str(self.generating_rules, bullet = "\t - ")
+                content = content + "\n\n### generating rules: \n" + list_to_str(self.generating_rules, bullet = "\t - ")
             else: 
                 raise ChatbotInputError("generating_rules must be a string or a list of strings")
             
         if use_assistant_profile and self.assistant_profile is not None:
             if type(self.assistant_profile) == str:
-                content = content + "\n\n Your profile: \n" + self.assistant_profile
+                content = content + "\n\n### Your profile: \n" + self.assistant_profile
             elif type(self.assistant_profile) == dict:
-                content = content + "\n\n Your profile: \n" + dict_to_str(self.assistant_profile, bullet = "\t - ")
+                content = content + "\n\n### Your profile: \n" + dict_to_str(self.assistant_profile, bullet = "\t - ")
             else:
                 raise ChatbotInputError("assistant_profile must be a string or a dictionary")
             
         if use_user_profile and self.user_profile is not None:
             if type(self.user_profile) == str:
-                content = content + "\n\n user profile: \n" + self.user_profile
+                content = content + "\n\n### user profile: \n" + self.user_profile
             elif type(self.user_profile) == dict:
-                content = content + "\n\n user profile: \n" + dict_to_str(self.user_profile, bullet = "\t - ")
+                content = content + "\n\n### user profile: \n" + dict_to_str(self.user_profile, bullet = "\t - ")
             else:
                 raise ChatbotInputError("user_profile must be a string or a dictionary")
             
@@ -183,6 +186,31 @@ class FlowGuideSystemChat(SystemChat):
         """
         super().__init__(flow_guide)
         self.flow_guide = flow_guide
+
+
+class GuidanceSystemChat(SystemChat):
+    """
+    system chat for guiding agent
+    """
+
+    def __init__(self, guidance: str):
+        """
+        system chat for guiding agent
+
+        :param guiding_content: detailed instruction for guiding the agent
+        => ex: "let's move to next topic: favorite movies"
+        """
+        self.guidance = guidance
+
+        super().__init__(f"guidance : {guidance}")
+        
+
+    
+
+
+
+
+
 
 
 def chatObjs_to_list(chatObjs: list[ChatObj]) -> list[dict]:

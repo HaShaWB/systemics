@@ -3,17 +3,17 @@
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from ..languageModel.LM import LM
+    from ..lm.LM import LM
 
-from .chatObj import *
-from .chatbotError import *
+from .chat_obj import *
+from .chatbot_error import *
 
 class Chatbot:
     """
     Chatbot class for managing chat interactions and language model responses
     """
 
-    def __init__(self, lm: LM):
+    def __init__(self, lm: "LM"):
         """
         Initialize the Chatbot
 
@@ -54,7 +54,7 @@ class Chatbot:
 
         :param chat: ChatObj to add
         """
-        self.chat_history.insert(chat, -1)
+        self.chat_history.append(chat)
 
     def remove_chat(self, index = -1):
         """
@@ -69,6 +69,7 @@ class Chatbot:
             
     
     def generate_response(self, add_to_history: bool = True,
+                          guidance: str = None,
                           temperature: float = 1, 
                           top_p: float = 1, 
                           max_tokens: int | None = None, **kwargs) -> ChatObj:
@@ -76,18 +77,19 @@ class Chatbot:
         Generate a response using the language model
 
         :param add_to_history: Whether to add the response to chat history
+        :param guidance: Guidance for response generation
         :param temperature: Temperature for response generation
         :param top_p: Top p value for response generation
         :param max_tokens: Maximum number of tokens for the response
         :param kwargs: Additional keyword arguments for the language model
         :return: Generated AssistantChat object
         """
-        messages = chatObjs_to_list(self.chat_history)
+        messages = (chatObjs_to_list(self.chat_history + [GuidanceSystemChat(guidance)])) if guidance else chatObjs_to_list(self.chat_history)
         response, usage = self.lm.generate_chat(messages, temperature, top_p, max_tokens, **kwargs)
 
-        self.total_used_tokens["completion_tokens"] += usage["completion_tokens"]
-        self.total_used_tokens["prompt_tokens"] += usage["prompt_tokens"]
-        self.total_used_tokens["total_tokens"] += usage["total_tokens"]
+        self.total_used_tokens["completion_tokens"] += usage.completion_tokens
+        self.total_used_tokens["prompt_tokens"] += usage.prompt_tokens
+        self.total_used_tokens["total_tokens"] += usage.total_tokens
 
         if add_to_history:
             self.add_chat(AssistantChat(response))
