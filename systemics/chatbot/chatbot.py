@@ -84,7 +84,13 @@ class Chatbot:
         :param kwargs: Additional keyword arguments for the language model
         :return: Generated AssistantChat object
         """
-        messages = (chatObjs_to_list(self.chat_history + [GuidanceSystemChat(guidance)])) if guidance else chatObjs_to_list(self.chat_history)
+        if guidance:
+            guidance_ojb = GuidanceSystemChat(guidance)
+            messages = self.chat_history + [guidance_ojb]
+        else:
+            messages = self.chat_history
+        messages = chatObjs_to_list(messages)
+        
         response, usage = self.lm.generate_chat(messages, temperature, top_p, max_tokens, **kwargs)
 
         self.total_used_tokens["completion_tokens"] += usage.completion_tokens
