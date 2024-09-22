@@ -3,7 +3,7 @@
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from ..lm.LM import LM
+    from ..lm.lm import LM
 
 from .chat_obj import *
 from .chatbot_error import *

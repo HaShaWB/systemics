@@ -123,7 +123,7 @@ class UDPClientProtocol:
 
                 message = data.decode()
                 if self.echo:
-                    print(f"<{from_where} -> Me>{message}\n")
+                    print(f"<{from_where} -> Me>\n{message}\n")
 
                 if message.startswith(self.discovery_cue):
                     target_id = message.split(":")[1]
