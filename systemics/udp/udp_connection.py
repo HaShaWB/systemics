@@ -14,8 +14,8 @@ class UDPClientProtocol:
     def __init__(self, id: str, port: int, 
                  message_handler: Callable[[str, str], None],
                  echo: bool = False,
-                 discovery_cue: str = "DISCOVER:",
-                 answer_cue: str = "ANSWER:",):
+                 discovery_cue: str = "DISCOVER FROM:",
+                 answer_cue: str = "ANSWER FROM:",):
         """
         Initialize the UDPClientProtocol
 
@@ -60,7 +60,7 @@ class UDPClientProtocol:
         """
         if target_id in self.peers_id_to_ip:
             return self.peers_id_to_ip[target_id]
-        message = f"{self.discovery_cue}{self.id}"
+        message = f"{self.discovery_cue}{target_id}"
         if self.echo:
             print(f"<Broadcast>\n{message}")
         self.sock.sendto(message.encode(), ('255.255.255.255', self.port))
@@ -77,7 +77,7 @@ class UDPClientProtocol:
         for _ in range(max_count):
             if target_id in self.peers_id_to_ip:
                 return self.peers_id_to_ip[target_id]
-            message = f"{self.discovery_cue}{self.id}"
+            message = f"{self.discovery_cue}{target_id}"
             if self.echo:
                 print(f"<Broadcast>\n{message}\n")
             self.sock.sendto(message.encode(), ('255.255.255.255', self.port))
