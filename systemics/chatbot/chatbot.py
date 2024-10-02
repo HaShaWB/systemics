@@ -1,9 +1,11 @@
 # chatbot/chatbot.py
 
+from pydantic import BaseModel
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ..lm.lm import LM
+
 
 from .chat_obj import *
 from .chatbot_error import *
@@ -102,3 +104,37 @@ class Chatbot:
 
         return AssistantChat(response)
     
+
+    def generate_response_in_structure(self, structure: BaseModel,
+                                        guidance: str = None,
+                                        temperature: float = 1, 
+                                        top_p: float = 1, 
+                                        max_tokens: int | None = None, **kwargs) -> json:
+        """
+        Generate a response using the language model in a specific structure
+        **IMPORTNAT: this method NEVER adds the response to the chat history**
+        
+        :param structure: Structure for the response
+        :param guidance: Guidance for response generation
+        :param temperature: Temperature for response generation
+        :param top_p: Top p value for response generation
+        :param max_tokens: Maximum number of tokens for the response
+        :param kwargs: Additional keyword arguments for the language model
+        :return: Generated AssistantChat object
+        """
+
+        if guidance:
+            guidance_ojb = GuidanceSystemChat(guidance)
+            messages = self.chat_history + [guidance_ojb]
+        else:    
+            messages = self.chat_history
+
+        messages = chatObjs_to_list(messages)
+
+        response, usage = self.lm.generate_chat_in_structure(messages, structure, temperature, top_p, max_tokens, **kwargs)
+
+        self.total_used_tokens["completion_tokens"] += usage.completion_tokens
+        self.total_used_tokens["prompt_tokens"] += usage.prompt_tokens
+        self.total_used_tokens["total_tokens"] += usage.total_tokens
+
+        return response
