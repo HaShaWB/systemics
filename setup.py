@@ -4,10 +4,11 @@ setup(
     name="systemics",
     version="0.1.11",
     packages=find_packages(),
-    install_requires=[        
+    install_requires=[
     ],
     extras_require={
         "lm" : ["openai", "pydantic"],
+        "sr" : ["webrtcvad", "numpy", "groq", "pydub"],
     },
     author="HaShaWB",
     author_email="whitebluej@kaist.ac.kr",

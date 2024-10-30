@@ -14,8 +14,8 @@ class UDPClientProtocol:
     def __init__(self, id: str, port: int, 
                  message_handler: Callable[[str, str], None],
                  echo: bool = False,
-                 discovery_cue: str = "DISCOVER FROM:",
-                 answer_cue: str = "ANSWER FROM:",):
+                 discovery_cue: str = "DISCOVER_FROM:",
+                 answer_cue: str = "ANSWER_FROM:",):
         """
         Initialize the UDPClientProtocol
 
