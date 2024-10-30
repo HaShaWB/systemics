@@ -4,11 +4,12 @@ from pydantic import BaseModel
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from ..lm.lm import LM
+    from .lm import LM
 
 
 from .chat_obj import *
 from .chatbot_error import *
+
 
 class Chatbot:
     """
@@ -29,6 +30,7 @@ class Chatbot:
             "total_tokens" : 0
         }
 
+
     def set_chat(self, chat: ChatObj, index: int):
         """
         Set a chat object at a specific index in the chat history
@@ -37,6 +39,7 @@ class Chatbot:
         :param index: Index to set the chat object at
         """
         self.chat_history[index] = chat
+
 
     def insert_chat(self, chat: ChatObj, index: int):
         """
@@ -50,6 +53,7 @@ class Chatbot:
         else:
             self.chat_history.insert(index, chat)
 
+
     def add_chat(self, chat: ChatObj):
         """
         Add a chat object to the end of the chat history
@@ -57,6 +61,7 @@ class Chatbot:
         :param chat: ChatObj to add
         """
         self.chat_history.append(chat)
+
 
     def remove_chat(self, index = -1):
         """

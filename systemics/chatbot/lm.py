@@ -1,9 +1,20 @@
-import os
+from abc import ABC, abstractmethod
 from pydantic import BaseModel
 
-import openai
 
-from .lm import LM
+class LM(ABC):
+    @abstractmethod
+    def __init__(self, **kwargs):
+        pass
+
+    @abstractmethod
+    def generate_chat(self,
+                      messages: list,
+                      temperature: float = 1,
+                      top_p: float = 1,
+                      max_tokens: int | None = None,
+                      **kwargs) -> tuple[str, dict]:
+        pass
 
 
 class Openai_LM(LM):
@@ -11,13 +22,16 @@ class Openai_LM(LM):
     Language Model based on OpenAI API
     """
 
-    def __init__(self, model: str, api_key: str = os.getenv('OPENAI_API_KEY')):
+    def __init__(self, model: str, api_key: str = None):
         """
         Initialize the OpenAI Language Model
 
         :param model: Name of the OpenAI LM model (e.g., gpt-4, gpt-3.5-turbo)
         :param api_key: OpenAI API key (default: retrieves from system environment variable)
         """
+
+        import openai
+        
         self.model = model
         self.agent = openai.OpenAI(api_key=api_key)
 
@@ -51,6 +65,7 @@ class Openai_LM(LM):
 
         return answer, usage
 
+
     def generate_chat_in_json(self,
                               messages: list,
                               temperature: float = 1,
@@ -83,9 +98,10 @@ class Openai_LM(LM):
 
         return answer, usage
 
+
     def generate_chat_in_structure(self,
                                    messages: list,
-                                   structure: BaseModel,
+                                   structure: "BaseModel",
                                    temperature: float = 1,
                                    top_p: float = 1,
                                    max_tokens: int | None = None,
