@@ -4,11 +4,11 @@ setup(
     name="systemics",
     version="0.1.11",
     packages=find_packages(),
-    install_requires=[
-    ],
+    install_requires=["numpy"],
     extras_require={
+        "face_recognition" : ["Pillow", "deepface", "tf-keras"],
         "lm" : ["openai", "pydantic"],
-        "sr" : ["webrtcvad", "numpy", "groq", "pydub"],
+        "sr" : ["webrtcvad", "groq", "pydub"],
     },
     author="HaShaWB",
     author_email="whitebluej@kaist.ac.kr",
