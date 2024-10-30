@@ -62,7 +62,7 @@ class UDPClientProtocol:
             return self.peers_id_to_ip[target_id]
         message = f"{self.discovery_cue}{target_id}"
         if self.echo:
-            print(f"<Broadcast>\n{message}")
+            print(f"<UDP_ECHO: Me -> Broadcast>\n{message}")
         self.sock.sendto(message.encode(), ('255.255.255.255', self.port))
 
 
@@ -79,7 +79,7 @@ class UDPClientProtocol:
                 return self.peers_id_to_ip[target_id]
             message = f"{self.discovery_cue}{target_id}"
             if self.echo:
-                print(f"<Broadcast>\n{message}\n")
+                print(f"<UDP_ECHO: Me -> Broadcast>\n{message}")
             self.sock.sendto(message.encode(), ('255.255.255.255', self.port))
             await asyncio.sleep(1)
 
@@ -102,7 +102,7 @@ class UDPClientProtocol:
             raise UDPConnectionError("No target specified")
         
         if self.echo:
-            print(f"<Me -> {target_id if target_id else target_ip}>\n{message}")
+            print(f"<UDP_ECHO: Me -> {target_id if target_id else target_ip}>\n{message}")
         self.sock.sendto(message.encode(), (target_ip, self.port))
 
 
@@ -123,7 +123,7 @@ class UDPClientProtocol:
 
                 message = data.decode()
                 if self.echo:
-                    print(f"<{from_where} -> Me>\n{message}\n")
+                    print(f"<UDP_ECHO: {from_where} -> Me>\n{message}\n")
 
                 if message.startswith(self.discovery_cue):
                     target_id = message.split(":")[1]
