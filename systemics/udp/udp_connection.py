@@ -56,7 +56,7 @@ class UDPClientProtocol:
         Discover the IP address of a peer by broadcasting a discovery message
 
         :param target_id: Unique identifier of the target peer
-        :return: IP address of the target peer if known
+        :return: IP address of the target peer if already known
         """
         if target_id in self.peers_id_to_ip:
             return self.peers_id_to_ip[target_id]

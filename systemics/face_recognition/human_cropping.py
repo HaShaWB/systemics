@@ -37,6 +37,8 @@ class Yolo_Crop(Human_Cropping):
         output_imgs = []
         index = 0
 
+        image = Image.open(image)
+
         for result in results:
             for box in result.boxes:
                 if int(box.cls) == 0: 
